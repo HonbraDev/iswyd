@@ -82,7 +82,7 @@ impl ArchivedMessageFull {
                 components: message.components,
                 sticker_items: message.sticker_items,
             }],
-            marked_as_edited: false,
+            marked_as_edited: message.edited_timestamp.is_some(), // kept because why not
         }
     }
 

@@ -61,6 +61,7 @@ impl EventHandler for Archiver {
             .edited_timestamp
             .and_then(|ts| Some(convert_ts(ts)))
             .unwrap_or_else(Utc::now);
+        let marked_as_edited = update.edited_timestamp.is_some();
 
         let filter = doc! {
             "id": message_id.to_string(),
@@ -83,6 +84,7 @@ impl EventHandler for Archiver {
                             timestamp,
                             self.session_id,
                         ));
+                    db_message.marked_as_edited = marked_as_edited;
                     ArchivedMessage::Full(db_message)
                 }
                 ArchivedMessage::Incomplete(mut db_message) => {
@@ -93,6 +95,7 @@ impl EventHandler for Archiver {
                             timestamp,
                             self.session_id,
                         ));
+                    db_message.marked_as_edited = marked_as_edited;
                     ArchivedMessage::Incomplete(db_message)
                 }
                 _ => {
