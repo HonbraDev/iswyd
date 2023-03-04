@@ -18,7 +18,8 @@ use crate::archived_message::{
 };
 
 pub struct Archiver {
-    pub guild_whitelist: Vec<u64>,
+    pub ignored_guilds: Vec<GuildId>,
+    pub ignored_channels: Vec<ChannelId>,
     pub mong: mongodb::Client,
     pub session_id: Uuid,
 }
@@ -32,6 +33,9 @@ impl Archiver {
 #[async_trait]
 impl EventHandler for Archiver {
     async fn message(&self, _ctx: Context, msg: Message) {
+        if self.is_event_ignored(&msg.channel_id, &msg.guild_id) {
+            return;
+        }
         let message_id = msg.id;
         let archived = ArchivedMessageFull::from_gateway(msg, self.session_id);
         if let Err(err) = self
@@ -49,6 +53,9 @@ impl EventHandler for Archiver {
     }
 
     async fn message_update(&self, _ctx: Context, update: MessageUpdateEvent) {
+        if self.is_event_ignored(&update.channel_id, &update.guild_id) {
+            return;
+        }
         let message_id = update.id;
         let timestamp = update
             .edited_timestamp
@@ -132,6 +139,10 @@ impl EventHandler for Archiver {
         id: MessageId,
         guild_id: Option<GuildId>,
     ) {
+        if self.is_event_ignored(&channel_id, &guild_id) {
+            return;
+        }
+
         println!("Message {id} deleted");
 
         let timestamp = Utc::now();
@@ -198,5 +209,16 @@ impl EventHandler for Archiver {
         _: Option<GuildId>,
     ) {
         println!("bruh moment {message_ids:?}");
+    }
+}
+
+impl Archiver {
+    fn is_event_ignored(&self, channel_id: &ChannelId, guild_id: &Option<GuildId>) -> bool {
+        match guild_id.as_ref() {
+            Some(guild_id) => {
+                self.ignored_channels.contains(channel_id) || self.ignored_guilds.contains(guild_id)
+            }
+            None => self.ignored_channels.contains(channel_id),
+        }
     }
 }

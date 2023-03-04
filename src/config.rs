@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serenity::model::id::{ChannelId, GuildId};
 use std::{io, path::PathBuf};
 use thiserror::Error;
 
@@ -7,7 +8,8 @@ use thiserror::Error;
 pub struct Config {
     pub discor_token: String,
     pub mong_connstring: String,
-    pub guild_whitelist: Vec<u64>,
+    pub ignored_guilds: Vec<GuildId>,
+    pub ignored_channels: Vec<ChannelId>,
 }
 
 #[derive(Debug, Error)]
@@ -44,7 +46,8 @@ impl Default for Config {
         Self {
             discor_token: "💀".to_string(),
             mong_connstring: "skull emoji".to_string(),
-            guild_whitelist: vec![],
+            ignored_guilds: vec![],
+            ignored_channels: vec![],
         }
     }
 }

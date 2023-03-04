@@ -9,7 +9,8 @@ pub async fn run(config: Config) -> Result<(), MainError> {
 
     let handler = Archiver {
         mong,
-        guild_whitelist: config.guild_whitelist,
+        ignored_guilds: config.ignored_guilds,
+        ignored_channels: config.ignored_channels,
         session_id: Uuid::new_v4(),
     };
 
